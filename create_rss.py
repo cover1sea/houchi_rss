@@ -1,22 +1,38 @@
+#python -m pip install tzdata
+#python -m pip install selenium
 import time
-import pprint
-import xml.dom.minidom
+import datetime
+from zoneinfo import ZoneInfo
+from email import utils
 from xml.dom.minidom import parseString
+import zoneinfo
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
+url = "https://hcsj.c4connect.co.jp/home"
+
 def debug_msg(msg):
   if not __debug__:
     print(msg)
+
+def create_rss_from_c4g():
+  datas = get_info_from_web()
+  debug_msg(datas)
+  debug_msg("+-----+")  
+  
+  rss_xml = create_rss(datas)
+  debug_msg(rss_xml)
+
+  return rss_xml 
 
 def get_info_from_web():
   options = Options()
   options.add_argument('--headless')
   driver = webdriver.Chrome(chrome_options=options)
   # or driver = webdriver.Chrome("path/to/webdriver")
-  driver.get("https://hcsj.c4connect.co.jp/home")
+  driver.get(url)
   time.sleep(2)
   list = driver.find_elements(
       By.CSS_SELECTOR, ".news-right-all .news-1 .news-content-cell")
@@ -45,7 +61,7 @@ def get_info_from_web():
         By.CSS_SELECTOR, ".news-top .news-header").get_attribute('innerText')
     date = item.find_element(
         By.CSS_SELECTOR, ".news-top .news-date").get_attribute('innerText')
-    link = "https://hcsj.c4connect.co.jp/home"
+    link = url
     desc = item.find_element(
         By.CSS_SELECTOR, ".news-content .news-content-cell").get_attribute('innerHTML')
     data = {
@@ -70,16 +86,27 @@ def create_rss(datas):
       </channel></rss>"
   dom = parseString(xml_template)
   channel = dom.getElementsByTagName("channel")[0]
+
+  now_rfc822 = iso8601_to_rfc822(datetime.datetime.now(ZoneInfo("Asia/Tokyo")))
+  t = dom.createElement("lastBuildDate")
+  t.appendChild(dom.createTextNode(str(now_rfc822)))
+  channel.appendChild(t)
+
   for data in datas:
       item = dom.createElement("item")
       channel.appendChild(item)
+      
+      num = dom.createElement("guid")
+      num.appendChild(dom.createTextNode(url+"#"+data["news_no"]))#dummy
+      item.appendChild(num)
 
       title = dom.createElement("title")
       title.appendChild(dom.createTextNode(data["title"]))
       item.appendChild(title)
 
       date = dom.createElement("pubDate")
-      date.appendChild(dom.createTextNode(data["date"]))
+      d = date_to_rfc822(data["date"])
+      date.appendChild(dom.createTextNode(str(d)))
       item.appendChild(date)
 
       desc = dom.createElement("description")
@@ -87,16 +114,16 @@ def create_rss(datas):
       item.appendChild(desc)
   return dom.toprettyxml()
 
+def date_to_rfc822(date):
+  date_l = date.split("/")
+  date_8601 = datetime.datetime(int(date_l[0]), int(date_l[1]), int(date_l[2]), 20, 0, 0, 0, ZoneInfo("Asia/Tokyo"))
+  return iso8601_to_rfc822(date_8601)
+
+def iso8601_to_rfc822(d):
+  return utils.formatdate(time.mktime(d.timetuple()), localtime=True)
+
 
 def main():
-  datas = get_info_from_web()
-  debug_msg(datas)
-  debug_msg("+-----+")  
-  
-  rss_xml = create_rss(datas)
-  debug_msg(rss_xml)
-
-  return rss_xml 
-  
+  create_rss_from_c4g()
 if __name__ == '__main__':
   main()
