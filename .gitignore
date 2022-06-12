@@ -2,3 +2,4 @@
 *.exe
 *.xml
 *.dat
+__pycache__
