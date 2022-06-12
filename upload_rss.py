@@ -30,7 +30,7 @@ def main():
     data = f.readline()
   datas = data.split(";")
   debug_msg(datas)
-  #ftp_upload(datas[0],int(datas[1]),datas[2],datas[3],datas[4])
+  ftp_upload(datas[0],int(datas[1]),datas[2],datas[3],datas[4])
   
 if __name__ == '__main__':
   main()

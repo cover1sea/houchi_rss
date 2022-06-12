@@ -14,7 +14,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
 url_houchi_d = "https://hcsj.c4connect.co.jp/"
-url_houchi_news = "https://cover1sea.net"
+url_houchi_news = "https://hcsj.c4connect.co.jp/home"
 
 def debug_msg(msg):
   if not __debug__:
