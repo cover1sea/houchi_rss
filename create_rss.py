@@ -11,7 +11,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
-url = "https://hcsj.c4connect.co.jp/home"
+url_houchi_d = "https://hcsj.c4connect.co.jp/"
+url_houchi_news = "https://hcsj.c4connect.co.jp/home"
 
 def debug_msg(msg):
   if not __debug__:
@@ -32,7 +33,7 @@ def get_info_from_web():
   options.add_argument('--headless')
   driver = webdriver.Chrome(chrome_options=options)
   # or driver = webdriver.Chrome("path/to/webdriver")
-  driver.get(url)
+  driver.get(url_houchi_news)
   time.sleep(2)
   list = driver.find_elements(
       By.CSS_SELECTOR, ".news-right-all .news-1 .news-content-cell")
@@ -61,14 +62,15 @@ def get_info_from_web():
         By.CSS_SELECTOR, ".news-top .news-header").get_attribute('innerText')
     date = item.find_element(
         By.CSS_SELECTOR, ".news-top .news-date").get_attribute('innerText')
-    link = url
+    link = url_houchi_news
     desc = item.find_element(
         By.CSS_SELECTOR, ".news-content .news-content-cell").get_attribute('innerHTML')
+    desc_rep = desc.replace(r"../../", url_houchi_d)
     data = {
         "news_no": news_no,
         "title": title,
         "date": date,
-        "desc": desc,
+        "desc": desc_rep,
         "url": link,
     }
     datas.append(data)
@@ -97,7 +99,7 @@ def create_rss(datas):
       channel.appendChild(item)
       
       num = dom.createElement("guid")
-      num.appendChild(dom.createTextNode(url+"#"+data["news_no"]))#dummy
+      num.appendChild(dom.createTextNode(url_houchi_news+"#"+data["news_no"]))#dummy
       item.appendChild(num)
 
       title = dom.createElement("title")
