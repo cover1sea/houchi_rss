@@ -1,5 +1,7 @@
 #python -m pip install tzdata
 #python -m pip install selenium
+#https://sites.google.com/chromium.org/driver/
+import sys
 import time
 import datetime
 from zoneinfo import ZoneInfo
@@ -12,7 +14,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
 url_houchi_d = "https://hcsj.c4connect.co.jp/"
-url_houchi_news = "https://hcsj.c4connect.co.jp/home"
+url_houchi_news = "https://cover1sea.net"
 
 def debug_msg(msg):
   if not __debug__:
@@ -23,10 +25,14 @@ def create_rss_from_c4g():
   debug_msg(datas)
   debug_msg("+-----+")  
   
-  rss_xml = create_rss(datas)
-  debug_msg(rss_xml)
+  rss = create_rss(datas)
+  debug_msg(rss)
+  debug_msg(rss.getElementsByTagName("item").length)
+  if rss.getElementsByTagName("item").length < 1:
+    sys.stderr("RSSが正常に生成されませんでした。")
+    sys.exit(1)
 
-  return rss_xml 
+  return rss.toprettyxml()
 
 def get_info_from_web():
   options = Options()
@@ -114,7 +120,7 @@ def create_rss(datas):
       desc = dom.createElement("description")
       desc.appendChild(dom.createTextNode(data["desc"]))
       item.appendChild(desc)
-  return dom.toprettyxml()
+  return dom
 
 def date_to_rfc822(date):
   date_l = date.split("/")
@@ -127,5 +133,6 @@ def iso8601_to_rfc822(d):
 
 def main():
   create_rss_from_c4g()
+  
 if __name__ == '__main__':
   main()

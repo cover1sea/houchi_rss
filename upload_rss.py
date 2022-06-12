@@ -19,7 +19,10 @@ def ftp_upload(host, port, user, password, file_path):
 
 def main():
   xml = create_rss.create_rss_from_c4g()
-
+  
+  debug_msg(xml)
+  
+  
   with open("houchi_news.xml", mode="w", encoding="utf-8") as f:
     f.write(xml)
   
@@ -27,7 +30,7 @@ def main():
     data = f.readline()
   datas = data.split(";")
   debug_msg(datas)
-  ftp_upload(datas[0],int(datas[1]),datas[2],datas[3],datas[4])
+  #ftp_upload(datas[0],int(datas[1]),datas[2],datas[3],datas[4])
   
 if __name__ == '__main__':
   main()
